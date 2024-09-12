@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import ReactMapGL, {Marker} from 'react-map-gl';
 import * as React from 'react';
-import Map, {Popup} from 'react-map-gl';
+import Map, {Marker, Popup} from 'react-map-gl';
 import { Room, Star, StarBorder } from "@material-ui/icons";
 import "./app.css";
 import axios from "axios";
 import { format } from "timeago.js";
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 
 function App() {
@@ -18,8 +18,6 @@ function App() {
   const [desc, setDesc] = useState(null);
   const [rating, setRating] = useState(0);
   const [viewport, setViewport] = useState({
-    width: "100vw",
-    height: "100vh",
     latitude: 46,
     longitude: 17,
     zoom: 4
@@ -43,7 +41,8 @@ function App() {
   };
 
   const handleAddClick = (e) => {
-    const [longitude, latitude] = e.lngLat;
+    const longitude = e.lngLat.lng;
+    const latitude = e.lngLat.lat;
     setNewPlace({
       lat: latitude,
       long: longitude,
@@ -56,7 +55,7 @@ function App() {
       username: currentUsername,
       title: title,
       desc: desc,
-      rating: star,
+      rating: rating,
       lat: newPlace.lat,
       long: newPlace.long,
     };
@@ -75,17 +74,16 @@ function App() {
     myStorage.removeItem("user");
   };
 
+
   return (
     <div style={{ height: "100vh", width: "100%" }}>
       <Map
         {...viewport}
         mapboxAccessToken = {process.env.REACT_APP_MAPBOX}
-        width="100%"
-        height="100%"
-        transitionDuration="200"
-        mapStyle="mapbox://styles/safak/cknndpyfq268f17p53nmpwira"
-        onViewportChange = {(nextViewport) => setViewport(nextViewport)}
-        onDblClick={currentUsername && handleAddClick}
+        transitionDuration="100"
+        onMove={e => setViewport(e.viewport)}
+        mapStyle="mapbox://styles/mapbox/streets-v9"
+        onDblClick={handleAddClick}
       >
         {pins.map(p => (
           <>
@@ -98,8 +96,8 @@ function App() {
                 handleMarkerClick(p._id,p.lat,p.long);
               }}
 
-              offsetLeft={-20}
-              offsetTop={-10}
+              // offsetLeft={-viewport.zoom * 3.5}
+              // offsetTop={-viewport.zoom * 7}
             >
             </Marker>
 
