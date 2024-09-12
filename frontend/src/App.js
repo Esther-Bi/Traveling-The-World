@@ -13,7 +13,10 @@ function App() {
   const [currentUsername, setCurrentUsername] = useState(myStorage.getItem("user"));
   const [pins, setPins] = useState([]);
   const [currentPlaceId, setCurrentPlaceId] = useState(null);
-
+  const [newPlace, setNewPlace] = useState(null);
+  const [title, setTitle] = useState(null);
+  const [desc, setDesc] = useState(null);
+  const [rating, setRating] = useState(0);
   const [viewport, setViewport] = useState({
     width: "100vw",
     height: "100vh",
@@ -39,6 +42,34 @@ function App() {
     setViewport({ ...viewport, latitude: lat, longitude: long });
   };
 
+  const handleAddClick = (e) => {
+    const [longitude, latitude] = e.lngLat;
+    setNewPlace({
+      lat: latitude,
+      long: longitude,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // prevenr refreshing page
+    const newPin = {
+      username: currentUsername,
+      title: title,
+      desc: desc,
+      rating: star,
+      lat: newPlace.lat,
+      long: newPlace.long,
+    };
+
+    try {
+      const res = await axios.post("/pins", newPin);
+      setPins([...pins, res.data]);
+      setNewPlace(null);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const handleLogout = () => {
     setCurrentUsername(null);
     myStorage.removeItem("user");
@@ -54,6 +85,7 @@ function App() {
         transitionDuration="200"
         mapStyle="mapbox://styles/safak/cknndpyfq268f17p53nmpwira"
         onViewportChange = {(nextViewport) => setViewport(nextViewport)}
+        onDblClick={currentUsername && handleAddClick}
       >
         {pins.map(p => (
           <>
@@ -97,6 +129,44 @@ function App() {
             )}
           </>
         ))}
+
+        {newPlace && (
+          <Popup
+            latitude={newPlace.lat}
+            longitude={newPlace.long}
+            closeButton={true}
+            closeOnClick={false}
+            onClose={() => setNewPlace(null)}
+            anchor="left"
+          >
+            <div>
+                <form onSubmit={handleSubmit}>
+                  <label>Title</label>
+                  <input
+                    placeholder="Enter a title"
+                    autoFocus
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Tell us something about this place."
+                    onChange={(e) => setDesc(e.target.value)}
+                  />
+                  <label>Rating</label>
+                  <select onChange={(e) => setRating(e.target.value)}>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                  <button type="submit" className="submitButton">
+                    Add Pin
+                  </button>
+                </form>
+            </div>
+          </Popup>
+        )}
       </Map>
     </div>
   );
