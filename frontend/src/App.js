@@ -6,6 +6,9 @@ import "./app.css";
 import axios from "axios";
 import { format } from "timeago.js";
 import 'mapbox-gl/dist/mapbox-gl.css';
+import Register from "./components/Register";
+import Login from "./components/Login";
+
 
 
 function App() {
@@ -17,6 +20,8 @@ function App() {
   const [title, setTitle] = useState(null);
   const [desc, setDesc] = useState(null);
   const [rating, setRating] = useState(0);
+  const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [viewport, setViewport] = useState({
     latitude: 46,
     longitude: 17,
@@ -70,8 +75,8 @@ function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUsername(null);
     myStorage.removeItem("user");
+    setCurrentUsername(null);
   };
 
 
@@ -83,7 +88,7 @@ function App() {
         transitionDuration="100"
         onMove={e => setViewport(e.viewport)}
         mapStyle="mapbox://styles/mapbox/streets-v9"
-        onDblClick={handleAddClick}
+        onDblClick={currentUsername && handleAddClick}
       >
         {pins.map(p => (
           <>
@@ -95,9 +100,6 @@ function App() {
                 e.originalEvent.stopPropagation();
                 handleMarkerClick(p._id,p.lat,p.long);
               }}
-
-              // offsetLeft={-viewport.zoom * 3.5}
-              // offsetTop={-viewport.zoom * 7}
             >
             </Marker>
 
@@ -165,6 +167,18 @@ function App() {
             </div>
           </Popup>
         )}
+
+        {currentUsername ? (
+          <button className="button logout" onClick={handleLogout}>log out</button>
+        ) : (
+          <div className="buttons">
+            <button className="button login" onClick={()=>setShowLogin(true)}>Login</button>
+            <button className="button register" onClick={()=>setShowRegister(true)}>Register</button>
+          </div>
+        )}
+        {showRegister && <Register setShowRegister={setShowRegister}/>}
+        {showLogin && <Login setShowLogin={setShowLogin} myStorage={myStorage} setCurrentUsername={setCurrentUsername} />}
+
       </Map>
     </div>
   );
